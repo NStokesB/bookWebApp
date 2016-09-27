@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package controller;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -15,7 +14,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.Author;
+import model.AuthorDAO;
+import model.AuthorDAOStrategy;
 import model.AuthorService;
+import model.MySqlDBStrategy;
 
 /**
  *
@@ -38,14 +40,19 @@ public class AuthorController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-     
+        
+             AuthorDAOStrategy dao = new AuthorDAO(
+                new MySqlDBStrategy(), 
+                "com.mysql.jdbc.Driver",
+                "jdbc:mysql://localhost:3306/book?useSSL=false",
+                "root", "admin");
+            AuthorService service = new AuthorService(dao);
+            List<Author> authors;
+            
             try{
             
-            AuthorService authorServ = new AuthorService();
-            List<Author> authors;
-            authors = authorServ.returnAllAuthors();
+           
+            authors = service.getAuthorList();
             request.setAttribute("authorList", authors);
             
           
@@ -61,7 +68,7 @@ public class AuthorController extends HttpServlet {
     
 
         }
-    }
+    
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**

@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,100 +23,58 @@ import java.util.Map;
  *
  * @author NStokesBeamon
  */
-public class MySqlDBStrategy  implements DBStrategy {
-    private Connection conn;
-    
-    
+public class MySqlDBStrategy implements DBStrategy {
+     private Connection conn;
+   
     @Override
-    public void openConnection(String driverClass, String url, 
-            String userName, String password) throws ClassNotFoundException, SQLException {
-        
-        Class.forName (driverClass);
-        conn = DriverManager.getConnection(url,userName, password);
-        
+    public void openConnection(String driverClass, String url, String userName, String password)
+            throws ClassNotFoundException, SQLException {
+
+        Class.forName(driverClass);
+        conn = DriverManager.getConnection(url, userName, password);
     }
-    
+
     @Override
     public void closeConnection() throws SQLException {
+
         conn.close();
     }
-    /**
-     * Must open and close a connection when using this method.
-     * Future optimizations may include changing the return type to an array.
-     * It will save on memory. Because ArrayLists have empty slots. 
-     * 
-     * @param tableName
-     * @param maxRecords - Limits result set to this number, or if maxRecords is zero (0) then no limit
-     * @return 
-     * @throws java.sql.SQLException 
-     */
+    
+    
+
     @Override
-    public List<Map<String, Object>> findAllRecords(String tableName, 
-            int maxRecords) throws SQLException{
-        
-        // create MySql statement
-        String sql;
-        if (maxRecords < 1) {
-        
-        sql = "select * from " + tableName;
-            } else {
-        sql = "select * from " + tableName + " limit " + maxRecords;
-                    }
-        // sorting could happen here
+    public List<Map<String,Object>> findAllRecords(String tableName, int maxRecords) throws SQLException {
+        String sql = "SELECT * FROM " + tableName + " Limit" + maxRecords;
         Statement stmt = conn.createStatement();
-        // create result set object.
         ResultSet rs = stmt.executeQuery(sql);
-        // get meta data
+        List<Map<String,Object>> records = new ArrayList<>();
         ResultSetMetaData rsmd = rs.getMetaData();
-        // find out how many columns there are in the table.
-        int columnCount = rsmd.getColumnCount();
-        // a list of maps to store our records
-        List<Map<String, Object>> records = new ArrayList<>();
-        
-        while ( rs.next()){
-            // loop for saving records into our map.
-            Map<String, Object> record = new HashMap<>();
-                for(int colNo = 1; colNo <= columnCount ; colNo++){
-                    // get field of this column
-                    Object colData = rs.getObject(colNo);
-                    // get columnName
-                    String columnName = rsmd.getColumnName(colNo);
-                    // put them into a map.
-                    record.put(columnName, colData);
-                }
-                // put our map into our list of maps.
-                records.add(record);
+        int colCount = rsmd.getColumnCount();
+        while (rs.next()) {
+            Map<String, Object> record = new LinkedHashMap<>();
+            for (int i = 0; i < colCount; i++) {
+                String colName = rsmd.getColumnName(i + 1);
+                Object colData = rs.getObject(colName);
+                record.put(colName, colData);
+            }
+            records.add(record);
+
         }
-                // return this list of maps
         return records;
     }
     
-    
     @Override
-    public void deleteOneRecord(String tableName, String id) throws ClassNotFoundException, SQLException {
-       // Validate the parameters here.
-        
-       // String sql = "DELETE FROM " + tableName + " WHERE " + column + "=" + value;
+     public void deleteOneRecord(String tableName, String id) throws ClassNotFoundException, SQLException {
+ 
         String pKeyColumnName = "";
-       // Statement stmt = conn.createStatement();
-        
-        
         DatabaseMetaData dmd = conn.getMetaData();
         ResultSet rs = null;
-      
-        // was told this is expensive. Could maybe solve this with an ENUM.
+           
         rs = dmd.getPrimaryKeys(null, null, tableName);
-        
-
-        // this works only if there is only one PK... in a parent child relationship I may want to 
-        // test for how many PKs I get back... if this is going to work for any table. 
-       
-            
+                   
         while(rs.next()){
         pKeyColumnName = rs.getString("COLUMN_NAME");
-       // System.out.println("PK column name is " + pKeyColumnName);
-        
-        //String sql = "delete from " + tableName + " where " + pKeyColumnName + "=" + id;
+       
         
         String sql2 = "delete from " + tableName + " where " + pKeyColumnName + "=?";
         
@@ -128,17 +87,52 @@ public class MySqlDBStrategy  implements DBStrategy {
 
     }
     
-    
-    
-    public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        
-        DBStrategy db = new MySqlDBStrategy();
-        db.openConnection("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/book", "root", "admin");
-        System.out.println(db.findAllRecords("author", 0).toString());
-        db.deleteOneRecord("author", "2");
-        System.out.println(db.findAllRecords("author", 0).toString());
-        db.closeConnection();
-        
+    @Override
+    public final Map<String, Object> findById(String tableName, String primaryKey,
+            Object primaryKeyValue) {
+
+        String sql = "SELECT * FROM " + tableName + " WHERE " + primaryKey + " = ?";
+        PreparedStatement stmt = null;
+        final Map<String, Object> record = new HashMap();
+
+        try {
+            stmt = conn.prepareStatement(sql);
+            stmt.setObject(1, primaryKeyValue);
+            ResultSet rs = stmt.executeQuery();
+            final ResultSetMetaData metaData = rs.getMetaData();
+            final int fields = metaData.getColumnCount();
+
+            
+            if (rs.next()) {
+                for (int i = 1; i <= fields; i++) {
+                    record.put(metaData.getColumnName(i), rs.getObject(i));
+                }
+            }
+            
+        } catch (SQLException e) {
+           
+        } finally {
+            try {
+                stmt.close();
+                conn.close();
+            } catch (SQLException e) {
+             
+            }
+        } 
+
+        return record;
     }
-    
+
+    public static void main(String[] args) throws Exception {
+        MySqlDBStrategy db = new MySqlDBStrategy();
+
+        db.openConnection("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/book?useSSL=false",
+                "root", "admin");
+        
+        db.deleteOneRecord("author", "1");
+        List<Map<String,Object>> records = db.findAllRecords("author", 50);
+        System.out.println(records);
+        db.closeConnection();
+    }
+
 }

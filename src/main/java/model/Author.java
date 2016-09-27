@@ -48,9 +48,7 @@ public class Author {
     }
 
     public void setAuthorId(int authorId) throws IllegalArgumentException {
-        if(authorId < 1000){
-            throw new IllegalArgumentException(ERROR_MSG);
-        }
+        
         
         this.authorId = authorId;
     }

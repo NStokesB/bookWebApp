@@ -14,15 +14,16 @@ import java.util.Map;
  * @author NStokesBeamon
  */
 public interface DBStrategy {
+
+    void closeConnection() throws SQLException;
+
+    void deleteOneRecord(String tableName, String id) throws ClassNotFoundException, SQLException;
     
-    public abstract void openConnection(String driverClass, String url, 
-            String userName, String password) 
-            throws ClassNotFoundException, SQLException;
+    Map<String, Object> findById(String tableName, String primaryKey,
+            Object primaryKeyValue);
+
+    List<Map<String,Object>> findAllRecords(String tableName, int maxRecords) throws SQLException;
+
+    void openConnection(String driverClass, String url, String userName, String password) throws ClassNotFoundException, SQLException;
     
-    public abstract void closeConnection() throws SQLException;
-    
-    public abstract List<Map<String, Object>> findAllRecords(String tableName, 
-            int maxRecords) throws SQLException;
-    
-    public void deleteOneRecord(String tableName, String id) throws ClassNotFoundException, SQLException;
 }

@@ -5,6 +5,7 @@
  */
 package model;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,36 +15,26 @@ import java.util.List;
  * @author NStokesBeamon
  */
 public class AuthorService {
-//        Author kerouac = new Author(1000, "Jack Kerouac", new Date());
-//        Author king = new Author(1001, "Stephen King", new Date());
-//        Author loftus = new Author(1002, "John w. Loftus", new Date());
+    private AuthorDAOStrategy dao;
+
+    public AuthorService(AuthorDAOStrategy dao) {
+        this.dao = dao;
+    }
     
-    private List<Author> authorList = new ArrayList<>(Arrays.asList
-        (new Author(1000, "J.K. Rowling"), new Author(1001, "Stephen King"), new Author(1002, "Stephenie Meyer")));
+    
+    public List<Author> getAuthorList() throws ClassNotFoundException, SQLException{
+        return dao.getAuthorList();
+    }
+
+    public static void main(String[] args) throws Exception{
+        AuthorDAOStrategy dao = new AuthorDAO(
+        new MySqlDBStrategy(),
+            "com.mysql.jdbc.Driver",
+            "jdbc:mysql://localhost:3306/book?useSSL=false",
+            "root", "admin");
+        AuthorService service = new AuthorService(dao);
+        List<Author> authors = service.getAuthorList();
+        System.out.println(authors);
         
-            
-
-    public List<Author> getAuthorList() {
-        return authorList;
     }
-
-    public void setAuthorList(List<Author> authorList) throws IllegalArgumentException{
-        if( authorList.isEmpty()){
-            throw new IllegalArgumentException();
-        }
-        this.authorList = authorList;
-    }
-
-    public List returnAllAuthors(){
-
-        return authorList;
-    }
-    
-    // test
-//     public static void main(String[] args) {
-//         AuthorService aServ = new AuthorService();
-//         List<Author> List = aServ.returnAllAuthors();
-//         for(Author a : List)
-//         System.out.println(a.toString());
-//     }
 }
