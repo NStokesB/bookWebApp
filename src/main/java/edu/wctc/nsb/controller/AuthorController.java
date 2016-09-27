@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package controller;
+package edu.wctc.nsb.controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -13,11 +13,11 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.Author;
-import model.AuthorDAO;
-import model.AuthorDAOStrategy;
-import model.AuthorService;
-import model.MySqlDBStrategy;
+import edu.wctc.nsb.model.Author;
+import edu.wctc.nsb.model.AuthorDAO;
+import edu.wctc.nsb.model.AuthorDAOStrategy;
+import edu.wctc.nsb.model.AuthorService;
+import edu.wctc.nsb.model.MySqlDBStrategy;
 
 /**
  *

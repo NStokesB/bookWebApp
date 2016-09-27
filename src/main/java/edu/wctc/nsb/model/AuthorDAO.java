@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model;
+package edu.wctc.nsb.model;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -50,6 +50,13 @@ public class AuthorDAO implements AuthorDAOStrategy {
         }
         db.closeConnection();
         return authors;
+    }
+    
+     public void deleteAuthorById(String id){
+        db.openConnection(driverClass, url, userName, password);
+        Integer primaryKeyValue = Integer.parseInt(id);
+        db.deleteById("author", "author_id", primaryKeyValue);
+        db.closeConnection();
     }
 
     public DBStrategy getDb() {

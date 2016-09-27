@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model;
+package edu.wctc.nsb.model;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -63,29 +63,32 @@ public class MySqlDBStrategy implements DBStrategy {
         return records;
     }
     
-    @Override
-     public void deleteOneRecord(String tableName, String id) throws ClassNotFoundException, SQLException {
- 
-        String pKeyColumnName = "";
-        DatabaseMetaData dmd = conn.getMetaData();
-        ResultSet rs = null;
-           
-        rs = dmd.getPrimaryKeys(null, null, tableName);
-                   
-        while(rs.next()){
-        pKeyColumnName = rs.getString("COLUMN_NAME");
-       
-        
-        String sql2 = "delete from " + tableName + " where " + pKeyColumnName + "=?";
-        
-        PreparedStatement pstmt = conn.prepareStatement(sql2);
-       
-        pstmt.setInt(1, Integer.parseInt(id));
-        
-        pstmt.executeUpdate(); 
-        }
-
+    private PreparedStatement buildDeleteStatement(String tableName, String primaryKeyFieldName, Object primaryKeyValue)throws Exception{
+        String sql = "DELETE FROM " + tableName + " WHERE " + primaryKeyFieldName + "=?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setObject(1, primaryKeyValue);
+        return stmt;
     }
+    
+   
+    public final void deleteById(String tableName, String primaryKeyFieldName, Object primaryKeyValue) throws Exception {
+       PreparedStatement stmt = buildDeleteStatement(tableName, primaryKeyFieldName, primaryKeyValue);
+       stmt.executeUpdate(); 
+    
+    }
+    
+    public final void insertRecord(String tableName, List<String> colNames, List<Object> colValues)throws Exception{
+	
+    
+   
+        } 
+    private PreparedStatement buildUpdateStatement(String tableName, List<String> colNames, String whereValue)throws Exception{
+        String sql = "UPDATE " + tableName + " SET " + colNames + "=?" + " WHERE " + whereValue + "=?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        return stmt;
+    }
+    
     
     @Override
     public final Map<String, Object> findById(String tableName, String primaryKey,
@@ -129,7 +132,8 @@ public class MySqlDBStrategy implements DBStrategy {
         db.openConnection("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/book?useSSL=false",
                 "root", "admin");
         
-        db.deleteOneRecord("author", "1");
+        
+       
         List<Map<String,Object>> records = db.findAllRecords("author", 50);
         System.out.println(records);
         db.closeConnection();
