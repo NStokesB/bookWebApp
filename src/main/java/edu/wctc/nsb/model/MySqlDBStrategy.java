@@ -103,26 +103,40 @@ public class MySqlDBStrategy implements DBStrategy {
         return ps;        
     }
     
+    @Override
     public final void insertRecord(String tableName, List<String> colNames, List<Object> colValues)throws Exception{
 	PreparedStatement stmt = buildInsertStatement(tableName,colNames,colValues);
         stmt.executeUpdate();    
    }
+      
+    
+    private PreparedStatement buildUpdateStatement(String tableName, List<String> colNames, 
+            String whereColumn)throws Exception{
+  
        
-    
-   
-     
-    
-    
-    
-    private PreparedStatement buildUpdateStatement(String tableName, List<String> colNames, String whereValue)throws Exception{
-        String sql = "UPDATE " + tableName + " SET " + colNames + "=?" + " WHERE " + whereValue + "=?";
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        return stmt;
+       // UPDATE author SET author_name = ?, date_added =? WHERE author_id = ?
+       String sql = "UPDATE " + tableName + " SET ";
+       StringJoiner sj = new StringJoiner("=?,","","=?");
+       for(String colName : colNames){
+           sj.add(colName);
+       }
+       sql += sj.toString();
+       sql += " WHERE " + whereColumn + "=?";
+              
+        return conn.prepareStatement(sql);
     }
     
-    
-    
-    
+    @Override
+    public final void updateRecord(String tableName, List<String> colNames, List colValues, String whereColumn ,Object whereValue)throws Exception{
+        PreparedStatement stmt = buildUpdateStatement(tableName, colNames, whereColumn);
+        for(int i=0; i < colValues.size(); i++) {
+            stmt.setObject(i+1, colValues.get(i));
+        }
+        stmt.setObject(colValues.size()+1, whereValue);
+        stmt.executeUpdate();
+        
+    }
+   
     @Override
     public final Map<String, Object> findById(String tableName, String primaryKey,
             Object primaryKeyValue) {
@@ -160,19 +174,19 @@ public class MySqlDBStrategy implements DBStrategy {
     }
 
     public static void main(String[] args) throws Exception {
-        MySqlDBStrategy db = new MySqlDBStrategy();
+        DBStrategy db = new MySqlDBStrategy();
 
         db.openConnection("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/book?useSSL=false",
                 "root", "admin");
         
        List<String> colNames = Arrays.asList("author_name", "date_added");
        List<Object> colValues = new ArrayList<>();
-       colValues.add("Sally Fields");
+       colValues.add("Sam Jackson");
        colValues.add(new Date());
-       db.insertRecord("author", colNames, colValues);
+       db.updateRecord("author", colNames, colValues,"author_id",6);
        
-        List<Map<String,Object>> records = db.findAllRecords("author", 50);
-        System.out.println(records);
+//        List<Map<String,Object>> records = db.findAllRecords("author", 50);
+//        System.out.println(records);
         db.closeConnection();
     }
 

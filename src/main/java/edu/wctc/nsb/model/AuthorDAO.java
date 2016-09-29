@@ -58,6 +58,12 @@ public class AuthorDAO implements AuthorDAOStrategy {
         db.deleteById("author", "author_id", primaryKeyValue);
         db.closeConnection();
     }
+    
+    public final void insertRecord(String tableName, List<String> colNames, List<Object> colValues)throws Exception{
+        db.openConnection(driverClass, url, userName, password);
+        db.insertRecord("author", colNames, colValues);
+        db.closeConnection();
+    }
 
     public DBStrategy getDb() {
         return db;

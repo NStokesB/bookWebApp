@@ -26,4 +26,7 @@ public interface DBStrategy {
 
     void openConnection(String driverClass, String url, String userName, String password) throws ClassNotFoundException, SQLException;
     
+    void insertRecord(String tableName, List<String> colNames, List<Object> colValues)throws Exception;
+    
+    void updateRecord(String tableName, List<String> colNames, List colValues, String whereColumn ,Object whereValue)throws Exception;
 }
