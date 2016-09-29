@@ -52,7 +52,7 @@ public class AuthorDAO implements AuthorDAOStrategy {
         return authors;
     }
     
-     public void deleteAuthorById(String id){
+    public final void deleteAuthorById(String id)throws Exception{
         db.openConnection(driverClass, url, userName, password);
         Integer primaryKeyValue = Integer.parseInt(id);
         db.deleteById("author", "author_id", primaryKeyValue);

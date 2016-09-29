@@ -17,7 +17,7 @@ public interface DBStrategy {
 
     void closeConnection() throws SQLException;
 
-    
+    void deleteById(String tableName, String primaryKeyFieldName, Object primaryKeyValue) throws Exception;
     
     Map<String, Object> findById(String tableName, String primaryKey,
             Object primaryKeyValue);

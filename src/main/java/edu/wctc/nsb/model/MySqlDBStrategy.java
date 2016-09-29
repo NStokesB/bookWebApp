@@ -6,7 +6,6 @@
 package edu.wctc.nsb.model;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,10 +13,14 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  *
@@ -70,24 +73,54 @@ public class MySqlDBStrategy implements DBStrategy {
         return stmt;
     }
     
-   
+   @Override
     public final void deleteById(String tableName, String primaryKeyFieldName, Object primaryKeyValue) throws Exception {
        PreparedStatement stmt = buildDeleteStatement(tableName, primaryKeyFieldName, primaryKeyValue);
        stmt.executeUpdate(); 
     
     }
     
+    private PreparedStatement buildInsertStatement(String tableName, List<String> colNames, List<Object> colValues)throws Exception{
+       PreparedStatement ps = null;
+       String sql = "INSERT INTO " + tableName;
+       StringJoiner sj = new StringJoiner(", ", " (", ")");
+       for (String columnName : colNames) {
+           sj.add(columnName);
+       }
+       sql += sj.toString();
+       sql += " VALUES ";
+       sj = new StringJoiner(", ", " (", ")");
+		
+           
+        for(Object colValue : colValues) {
+           sj.add("?");
+       }
+       sql += sj.toString();
+       ps = conn.prepareStatement(sql);
+       for(int d=0; d < colValues.size(); d++) {
+           ps.setObject(d+1, colValues.get(d));
+       }
+        return ps;        
+    }
+    
     public final void insertRecord(String tableName, List<String> colNames, List<Object> colValues)throws Exception{
-	
+	PreparedStatement stmt = buildInsertStatement(tableName,colNames,colValues);
+        stmt.executeUpdate();    
+   }
+       
     
    
-        } 
+     
+    
+    
+    
     private PreparedStatement buildUpdateStatement(String tableName, List<String> colNames, String whereValue)throws Exception{
         String sql = "UPDATE " + tableName + " SET " + colNames + "=?" + " WHERE " + whereValue + "=?";
         PreparedStatement stmt = conn.prepareStatement(sql);
-        
         return stmt;
     }
+    
+    
     
     
     @Override
@@ -132,7 +165,11 @@ public class MySqlDBStrategy implements DBStrategy {
         db.openConnection("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/book?useSSL=false",
                 "root", "admin");
         
-        
+       List<String> colNames = Arrays.asList("author_name", "date_added");
+       List<Object> colValues = new ArrayList<>();
+       colValues.add("Sally Fields");
+       colValues.add(new Date());
+       db.insertRecord("author", colNames, colValues);
        
         List<Map<String,Object>> records = db.findAllRecords("author", 50);
         System.out.println(records);
