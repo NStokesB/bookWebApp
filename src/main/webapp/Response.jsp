@@ -5,7 +5,7 @@
 --%>
 
 <%@page import="java.util.List"%>
-<%@page import="model.Author"%>
+<%@page import="edu.wctc.nsb.model.Author"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -33,6 +33,7 @@
             <div class="collapse navbar-collapse" id="collapse-menu">
                 <ul class="nav navbar-nav navbar-right">
                     <li class="active"><a href="index.html">Home</a></li>
+                    
                 </ul>
            </div>
         </div>
@@ -42,9 +43,13 @@
         <div class="col-md-8">
         <h1>Author Inventory</h1>
         
+        <form id="authorListForm" name="authorListForm" method="POST" action="AuthorController?action=update">
+        <input type="submit" name="Delete" value="Delete"/>
+        <input type="submit" name="Update" value="Update"/>
         <table class="table table-hover active">
             <thead>
                 <tr>
+                    
                     <th>ID</th>
                     <th>Author Name</th>
                     <th>Date Added</th>
@@ -56,8 +61,8 @@
             
                     <c:forEach var="author" items="${authorList}">
                                  <tr>
-                                    <td>
-                                        <c:out value="${author.authorId}" />
+                                     <td>
+                                        <input type="checkbox" name="authorId" value="${author.authorId}">
                                     </td>
                                     <td>
                                         <c:out value="${author.authorName}"/>
@@ -70,11 +75,16 @@
            </tbody>
             
         </table>
+        </form>
+        
+        <a href="add.jsp"><img src="images/addper.jpg" title="add" width="50" height="50"/></a>
+        
+        
         <h1>${errorMsg}</h1>
         </div>
         </div>
         </div>
-        
+       
         <nav class="navbar	navbar-inverse	navbar-fixed-bottom">
             
             <div class="container">
@@ -84,5 +94,6 @@
         </nav>
         
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        
     </body>
 </html>

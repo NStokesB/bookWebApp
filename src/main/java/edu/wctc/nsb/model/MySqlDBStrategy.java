@@ -5,6 +5,7 @@
  */
 package edu.wctc.nsb.model;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -26,7 +27,7 @@ import java.util.StringJoiner;
  *
  * @author NStokesBeamon
  */
-public class MySqlDBStrategy implements DBStrategy {
+public class MySqlDBStrategy implements DBStrategy, Serializable{
      private Connection conn;
    
     @Override

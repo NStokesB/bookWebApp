@@ -16,4 +16,14 @@ public interface AuthorDAOStrategy {
 
     List<Author> getAuthorList() throws ClassNotFoundException, SQLException;
     
+    void initDao(String driverClass, String url, String userName, String password);
+    
+    void deleteAuthorById(String id)throws Exception;
+    
+    void insertNewRecord(List<Object> colValues)throws Exception;
+    
+    void updateRecords(Integer authorId, String authorName) throws SQLException, Exception;
+    
+    Author findAuthorById(Integer authorId)throws Exception;
+    
 }

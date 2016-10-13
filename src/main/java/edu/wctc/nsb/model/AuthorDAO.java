@@ -5,29 +5,44 @@
  */
 package edu.wctc.nsb.model;
 
+import java.io.Serializable;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import javax.activation.DataSource;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
 /**
  *
  * @author NStokesBeamon
  */
-public class AuthorDAO implements AuthorDAOStrategy {
+@Dependent
+public class AuthorDAO implements AuthorDAOStrategy, Serializable {
+    @Inject
     private DBStrategy db;
+    
+    private DataSource ds;
     private String driverClass;
     private String url;
     private String userName;
     private String password;
  
-    public AuthorDAO(DBStrategy db, String driverClass, String url, String userName, String password) {
-        this.db = db;
-        this.driverClass = driverClass;
-        this.url = url;
-        this.userName = userName;
-        this.password = password;
+    public AuthorDAO() {
+        
+    }
+    
+   @Override
+    public void initDao(String driverClass, String url, String userName, String password) {
+        setDriverClass(driverClass);
+        setUrl(url);
+        setUserName(userName);
+        setPassword(password);
     }
     
     @Override
@@ -52,6 +67,7 @@ public class AuthorDAO implements AuthorDAOStrategy {
         return authors;
     }
     
+    @Override
     public final void deleteAuthorById(String id)throws Exception{
         db.openConnection(driverClass, url, userName, password);
         Integer primaryKeyValue = Integer.parseInt(id);
@@ -59,10 +75,33 @@ public class AuthorDAO implements AuthorDAOStrategy {
         db.closeConnection();
     }
     
-    public final void insertRecord(String tableName, List<String> colNames, List<Object> colValues)throws Exception{
+    @Override
+    public final void insertNewRecord(List<Object> colValues)throws Exception{
         db.openConnection(driverClass, url, userName, password);
-        db.insertRecord("author", colNames, colValues);
+        List<String> colNames = Arrays.asList("author_name", "date_added");
+        db.insertRecord("author",colNames, colValues);
         db.closeConnection();
+        
+    }
+    
+    public void updateRecords(Integer authorId, String authorName) throws SQLException, Exception{
+          db.openConnection(driverClass, url, userName, password);
+          db.updateRecord("author", Arrays.asList("author_name"), 
+                                       Arrays.asList(authorName),
+                                       "author_id", authorId);
+          db.closeConnection();
+    }
+    
+    public Author findAuthorById(Integer authorId)throws Exception{
+        db.openConnection(driverClass, url, userName, password);
+      
+        Map<String,Object> data = db.findById("author", "author_id", authorId);
+        Author author = new Author();
+        author.setAuthorId((Integer)data.get("author_id"));
+        author.setAuthorName(data.get("author_name").toString());
+        author.setDateAdded((Date)data.get("date_added"));
+        db.closeConnection();
+        return author;
     }
 
     public DBStrategy getDb() {
@@ -72,16 +111,60 @@ public class AuthorDAO implements AuthorDAOStrategy {
     public void setDb(DBStrategy db) {
         this.db = db;
     }
-    
-    public static void main(String[] args)throws Exception {
-        AuthorDAOStrategy dao = new AuthorDAO(
-                new MySqlDBStrategy(), 
-                "com.mysql.jdbc.Driver",
-                "jdbc:mysql://localhost:3306/book?useSSL=false",
-                "root", "admin");
-        
-        List<Author> authors = dao.getAuthorList();
-        System.out.println(authors);
-        
+
+    public String getDriverClass() {
+        return driverClass;
     }
+
+    public void setDriverClass(String driverClass) {
+        this.driverClass = driverClass;
+    }
+    
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
+    public DataSource getDs() {
+        return ds;
+    }
+
+    public void setDs(DataSource ds) {
+        this.ds = ds;
+    }
+    
+//    public static void main(String[] args)throws Exception {
+//        AuthorDAOStrategy dao = new AuthorDAO(
+//                new MySqlDBStrategy(), 
+//                "com.mysql.jdbc.Driver",
+//                "jdbc:mysql://localhost:3306/book?useSSL=false",
+//                "root", "admin");
+//        
+//        List<Author> authors = dao.getAuthorList();
+//        System.out.println(authors);
+//        
+//    }
+
+  
+
+    
 }
