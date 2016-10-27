@@ -8,6 +8,7 @@ package edu.wctc.nsb.model;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  *
@@ -29,4 +30,6 @@ public interface DBStrategy {
     void insertRecord(String tableName, List<String> colNames, List<Object> colValues)throws Exception;
     
     void updateRecord(String tableName, List<String> colNames, List colValues, String whereColumn ,Object whereValue)throws Exception;
+    
+    void openConnection(DataSource ds) throws SQLException;
 }

@@ -7,6 +7,7 @@ package edu.wctc.nsb.model;
 
 import java.sql.SQLException;
 import java.util.List;
+import javax.sql.DataSource;
 
 /**
  *
@@ -25,5 +26,7 @@ public interface AuthorDAOStrategy {
     void updateRecords(Integer authorId, String authorName) throws SQLException, Exception;
     
     Author findAuthorById(Integer authorId)throws Exception;
+    
+    void initDao(DataSource ds) throws SQLException;
     
 }

@@ -19,7 +19,12 @@ import edu.wctc.nsb.model.AuthorDAO;
 import edu.wctc.nsb.model.AuthorDAOStrategy;
 import edu.wctc.nsb.model.AuthorService;
 import edu.wctc.nsb.model.MySqlDBStrategy;
+import java.sql.SQLException;
 import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  *
@@ -40,6 +45,7 @@ public class AuthorController extends HttpServlet {
     private String url;
     private String userName;
     private String password;
+    private String dbJndiName;
 
     @Inject
     private AuthorService authService;
@@ -87,6 +93,7 @@ public class AuthorController extends HttpServlet {
                     this.refreshList(request, authService);
 
                     destination = RESPONSE_PAGE;
+                    //response.sendRedirect(RESPONSE_PAGE);
                     break;
 
                 case ADD:
@@ -94,6 +101,7 @@ public class AuthorController extends HttpServlet {
                     authService.createNewRecordInTable(authorName);
                     this.refreshList(request, authService);
                     destination = RESPONSE_PAGE;
+                    //response.sendRedirect(RESPONSE_PAGE);
                     break;
                     
                 case EDIT_SELECT:
@@ -102,6 +110,7 @@ public class AuthorController extends HttpServlet {
                     Author auth = authService.findAuthorById(a);
                     request.setAttribute("author", auth);
                     destination = EDIT_PAGE;
+                    //response.sendRedirect(EDIT_PAGE);
                     break;
                     
                 case EDIT:
@@ -110,12 +119,14 @@ public class AuthorController extends HttpServlet {
                     authService.editAuthorRecord(authorId,name);
                     this.refreshList(request, authService);
                     destination = RESPONSE_PAGE;
+                    //response.sendRedirect(RESPONSE_PAGE);
                     
                     
                 default:
 
                     request.setAttribute("errMsg", NO_PARAMETER_MSG);
                     destination = RESPONSE_PAGE;
+                    //response.sendRedirect(RESPONSE_PAGE);
                     break;
 
             }
@@ -127,6 +138,7 @@ public class AuthorController extends HttpServlet {
         RequestDispatcher view
                 = request.getRequestDispatcher(destination);
         view.forward(request, response);
+        //response.sendRedirect(RESPONSE_PAGE);
 
     }
 
@@ -180,10 +192,19 @@ public class AuthorController extends HttpServlet {
         url = getServletContext().getInitParameter("db.url");
         userName = getServletContext().getInitParameter("db.username");
         password = getServletContext().getInitParameter("db.password");
+        dbJndiName = getServletContext().getInitParameter("db.jndi.name");
     }
 
-    private void configDbConnection() {
-        authService.getDao().initDao(driverClass, url, userName, password);
+    private void configDbConnection() throws NamingException, SQLException {
+        //authService.getDao().initDao(driverClass, url, userName, password);
+        if (dbJndiName == null){
+            authService.getDao().initDao(driverClass, url, userName, password);
+        }else {
+            Context ctx = new InitialContext();
+            DataSource ds = (DataSource) ctx.lookup(dbJndiName);
+            authService.getDao().initDao(ds);
+            
+        }
     }
 
     private void refreshList(HttpServletRequest request, AuthorService authorService) throws Exception {

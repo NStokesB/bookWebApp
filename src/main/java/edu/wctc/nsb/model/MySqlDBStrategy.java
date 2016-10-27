@@ -22,6 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import javax.sql.DataSource;
+
 
 /**
  *
@@ -173,22 +175,26 @@ public class MySqlDBStrategy implements DBStrategy, Serializable{
 
         return record;
     }
-
-    public static void main(String[] args) throws Exception {
-        DBStrategy db = new MySqlDBStrategy();
-
-        db.openConnection("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/book?useSSL=false",
-                "root", "admin");
-        
-       List<String> colNames = Arrays.asList("author_name", "date_added");
-       List<Object> colValues = new ArrayList<>();
-       colValues.add("Sam Jackson");
-       colValues.add(new Date());
-       db.updateRecord("author", colNames, colValues,"author_id",6);
-       
-//        List<Map<String,Object>> records = db.findAllRecords("author", 50);
-//        System.out.println(records);
-        db.closeConnection();
+    
+    public final void openConnection(DataSource ds) throws SQLException{
+       conn = ds.getConnection();
     }
+
+//    public static void main(String[] args) throws Exception {
+//        DBStrategy db = new MySqlDBStrategy();
+//
+//        db.openConnection("com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/book?useSSL=false",
+//                "root", "admin");
+//        
+//       List<String> colNames = Arrays.asList("author_name", "date_added");
+//       List<Object> colValues = new ArrayList<>();
+//       colValues.add("Sam Jackson");
+//       colValues.add(new Date());
+//       db.updateRecord("author", colNames, colValues,"author_id",6);
+//       
+////        List<Map<String,Object>> records = db.findAllRecords("author", 50);
+////        System.out.println(records);
+//        db.closeConnection();
+//    }
 
 }

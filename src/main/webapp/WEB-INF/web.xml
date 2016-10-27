@@ -3,7 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
-    
+    <servlet>
+        <servlet-name>AuthorController</servlet-name>
+        <servlet-class>edu.wctc.nsb.controller.AuthorController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthorController</servlet-name>
+        <url-pattern>/AuthorController</url-pattern>
+    </servlet-mapping>
     
     <context-param>
         <param-name>db.driver.class</param-name>
@@ -20,6 +27,10 @@
     <context-param>
         <param-name>db.password</param-name>
         <param-value>admin</param-value>
+    </context-param>
+    <context-param>
+        <param-name>db.jndi.name</param-name>
+        <param-value>jdbc/book</param-value>
     </context-param>
     
     <session-config>
