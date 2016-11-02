@@ -5,51 +5,61 @@
  */
 package edu.wctc.nsb.model;
 
+import java.io.Serializable;
 import java.util.Date;
-import java.util.Objects;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author NStokesBeamon
  */
-public class Author {
-    private int authorId;
+@Entity
+@Table(name = "author")
+@XmlRootElement
+@NamedQueries({
+    @NamedQuery(name = "Author.findAll", query = "SELECT a FROM Author a"),
+    @NamedQuery(name = "Author.findByAuthorId", query = "SELECT a FROM Author a WHERE a.authorId = :authorId"),
+    @NamedQuery(name = "Author.findByAuthorName", query = "SELECT a FROM Author a WHERE a.authorName = :authorName"),
+    @NamedQuery(name = "Author.findByDateAdded", query = "SELECT a FROM Author a WHERE a.dateAdded = :dateAdded")})
+public class Author implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "author_id")
+    private Integer authorId;
+    @Size(max = 45)
+    @Column(name = "author_name")
     private String authorName;
+    @Column(name = "date_added")
+    @Temporal(TemporalType.DATE)
     private Date dateAdded;
-    private final String ERROR_MSG = "There is a problem with the DataBase :(";
-    
+
     public Author() {
     }
 
-    public Author(int authorId) throws IllegalArgumentException {
-          if(authorId < 1000){
-            throw new IllegalArgumentException(ERROR_MSG);
-        }
-        
+    public Author(Integer authorId) {
         this.authorId = authorId;
     }
-    
-// This constructor is to simplify the hard coding of this list later
-    
-    public Author(int authorId, String authorName) throws IllegalArgumentException {
-        if(authorId < 1000 || authorName.isEmpty()){
-            throw new IllegalArgumentException(ERROR_MSG);
-        }
-        
-        
-        this.authorId = authorId;
-        this.authorName = authorName;
-        this.dateAdded = new Date();
-    }
-    
-    
-    public int getAuthorId()  {
+
+    public Integer getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(int authorId) throws IllegalArgumentException {
-        
-        
+    public void setAuthorId(Integer authorId) {
         this.authorId = authorId;
     }
 
@@ -57,10 +67,7 @@ public class Author {
         return authorName;
     }
 
-    public void setAuthorName(String authorName) throws IllegalArgumentException {
-        if(authorName.isEmpty()){
-            throw new IllegalArgumentException(ERROR_MSG);
-        }
+    public void setAuthorName(String authorName) {
         this.authorName = authorName;
     }
 
@@ -68,38 +75,25 @@ public class Author {
         return dateAdded;
     }
 
-    public void setDateAdded(Date dateAdded) throws IllegalArgumentException {
-        if(dateAdded == null){
-            throw new IllegalArgumentException(ERROR_MSG);
-        }
+    public void setDateAdded(Date dateAdded) {
         this.dateAdded = dateAdded;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + this.authorId;
-        hash = 79 * hash + Objects.hashCode(this.authorName);
-        hash = 79 * hash + Objects.hashCode(this.dateAdded);
+        int hash = 0;
+        hash += (authorId != null ? authorId.hashCode() : 0);
         return hash;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Author)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Author other = (Author) obj;
-        if (this.authorId != other.authorId) {
-            return false;
-        }
-        if (!Objects.equals(this.authorName, other.authorName)) {
-            return false;
-        }
-        if (!Objects.equals(this.dateAdded, other.dateAdded)) {
+        Author other = (Author) object;
+        if ((this.authorId == null && other.authorId != null) || (this.authorId != null && !this.authorId.equals(other.authorId))) {
             return false;
         }
         return true;
@@ -107,7 +101,7 @@ public class Author {
 
     @Override
     public String toString() {
-        return "Author{" + "authorId=" + authorId + ", authorName=" + authorName + ", dateAdded=" + dateAdded + '}';
+        return "entity.Author[ authorId=" + authorId + " ]";
     }
     
 }

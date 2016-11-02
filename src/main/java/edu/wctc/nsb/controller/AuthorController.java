@@ -5,6 +5,7 @@
  */
 package edu.wctc.nsb.controller;
 
+import edu.wctc.nsb.ejb.AuthorFacade;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -15,11 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import edu.wctc.nsb.model.Author;
-import edu.wctc.nsb.model.AuthorDAO;
-import edu.wctc.nsb.model.AuthorDAOStrategy;
-import edu.wctc.nsb.model.AuthorService;
-import edu.wctc.nsb.model.MySqlDBStrategy;
 import java.sql.SQLException;
+import java.util.Date;
 import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -41,14 +39,10 @@ public class AuthorController extends HttpServlet {
     private static final String ADD = "add";
     private final String RESPONSE_PAGE = "/Response.jsp";
     private final String EDIT_PAGE = "/edit.jsp";
-    private String driverClass;
-    private String url;
-    private String userName;
-    private String password;
-    private String dbJndiName;
+   
 
     @Inject
-    private AuthorService authService;
+    private AuthorFacade authService;
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -65,13 +59,14 @@ public class AuthorController extends HttpServlet {
 
         String destination = RESPONSE_PAGE;
         String action = request.getParameter(ACTION_PARAMETER);
+        Author author = null;
 
         List<Author> authors;
        
         try {
 
-            configDbConnection();
-            authors = authService.getAuthorList();
+            
+            authors = authService.findAll();
             request.setAttribute("authorList", authors);
             
             String delete = request.getParameter("Delete");
@@ -79,7 +74,8 @@ public class AuthorController extends HttpServlet {
                 String[] itemsChecked = request.getParameterValues("authorId");
                 if(itemsChecked != null && itemsChecked.length > 0) {
                     for(String id : itemsChecked) {
-                        authService.deleteByAuthorId(id);
+                        author = authService.find(new Integer(id));
+                        authService.remove(author);
                     }
                 }
                 this.refreshList(request, authService);
@@ -98,7 +94,11 @@ public class AuthorController extends HttpServlet {
 
                 case ADD:
                     String authorName = request.getParameter("name");
-                    authService.createNewRecordInTable(authorName);
+                    author = new Author();
+                    author.setAuthorName(authorName);
+                    author.setDateAdded(new Date());
+
+                    authService.create(author);
                     this.refreshList(request, authService);
                     destination = RESPONSE_PAGE;
                     //response.sendRedirect(RESPONSE_PAGE);
@@ -107,8 +107,8 @@ public class AuthorController extends HttpServlet {
                 case EDIT_SELECT:
                     String[] itemsChecked = request.getParameterValues("authorId");
                     Integer a = Integer.parseInt(itemsChecked[0]);
-                    Author auth = authService.findAuthorById(a);
-                    request.setAttribute("author", auth);
+                    author = authService.find(new Integer(a));
+                    request.setAttribute("author", author);
                     destination = EDIT_PAGE;
                     //response.sendRedirect(EDIT_PAGE);
                     break;
@@ -116,7 +116,9 @@ public class AuthorController extends HttpServlet {
                 case EDIT:
                     String name = request.getParameter("authorName");
                     String authorId = request.getParameter("authorId");
-                    authService.editAuthorRecord(authorId,name);
+                    author.setAuthorName(name);
+                    author = authService.find(new Integer(authorId));
+                    authService.edit(author);
                     this.refreshList(request, authService);
                     destination = RESPONSE_PAGE;
                     //response.sendRedirect(RESPONSE_PAGE);
@@ -184,31 +186,11 @@ public class AuthorController extends HttpServlet {
     @Override
     public void init() throws ServletException {
 
-//        driverClass = "com.mysql.jdbc.Driver";
-//        url = "jdbc:mysql://localhost:3306/book?useSSL=false";
-//        userName = "root";        
-//        password = "admin";
-        driverClass = getServletContext().getInitParameter("db.driver.class");
-        url = getServletContext().getInitParameter("db.url");
-        userName = getServletContext().getInitParameter("db.username");
-        password = getServletContext().getInitParameter("db.password");
-        dbJndiName = getServletContext().getInitParameter("db.jndi.name");
     }
 
-    private void configDbConnection() throws NamingException, SQLException {
-        //authService.getDao().initDao(driverClass, url, userName, password);
-        if (dbJndiName == null){
-            authService.getDao().initDao(driverClass, url, userName, password);
-        }else {
-            Context ctx = new InitialContext();
-            DataSource ds = (DataSource) ctx.lookup(dbJndiName);
-            authService.getDao().initDao(ds);
-            
-        }
-    }
 
-    private void refreshList(HttpServletRequest request, AuthorService authorService) throws Exception {
-        List<Author> authors = authorService.getAuthorList();
+    private void refreshList(HttpServletRequest request, AuthorFacade authorService) throws Exception {
+        List<Author> authors = authorService.findAll();
         request.setAttribute("authorList", authors);
     }
 }
