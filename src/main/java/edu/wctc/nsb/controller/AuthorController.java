@@ -69,17 +69,6 @@ public class AuthorController extends HttpServlet {
             authors = authService.findAll();
             request.setAttribute("authorList", authors);
             
-            String delete = request.getParameter("Delete");
-            if(delete != null && delete.equals("Delete")) {
-                String[] itemsChecked = request.getParameterValues("authorId");
-                if(itemsChecked != null && itemsChecked.length > 0) {
-                    for(String id : itemsChecked) {
-                        author = authService.find(new Integer(id));
-                        authService.remove(author);
-                    }
-                }
-                this.refreshList(request, authService);
-            }
             
             
 
@@ -105,19 +94,34 @@ public class AuthorController extends HttpServlet {
                     break;
                     
                 case EDIT_SELECT:
+                    String delete = request.getParameter("Delete");
+                    String update = request.getParameter("Update");
+                    if (delete != null && delete.equals("Delete")) {
+                        String[] itemsChecked = request.getParameterValues("authorId");
+                        if (itemsChecked != null && itemsChecked.length > 0) {
+                            for (String id : itemsChecked) {
+                                author = authService.find(new Integer(id));
+                                authService.remove(author);
+                            }
+                        }
+                        this.refreshList(request, authService);
+                    }if (update != null && update.equals("Update")){
+
                     String[] itemsChecked = request.getParameterValues("authorId");
                     Integer a = Integer.parseInt(itemsChecked[0]);
                     author = authService.find(new Integer(a));
                     request.setAttribute("author", author);
+
                     destination = EDIT_PAGE;
+                    }
                     //response.sendRedirect(EDIT_PAGE);
                     break;
                     
                 case EDIT:
                     String name = request.getParameter("authorName");
                     String authorId = request.getParameter("authorId");
-                    author.setAuthorName(name);
                     author = authService.find(new Integer(authorId));
+                    author.setAuthorName(name);
                     authService.edit(author);
                     this.refreshList(request, authService);
                     destination = RESPONSE_PAGE;
