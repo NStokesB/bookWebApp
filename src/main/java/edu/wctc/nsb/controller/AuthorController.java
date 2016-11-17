@@ -5,7 +5,7 @@
  */
 package edu.wctc.nsb.controller;
 
-import edu.wctc.nsb.ejb.AuthorFacade;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -16,13 +16,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import edu.wctc.nsb.model.Author;
+import edu.wctc.nsb.service.AuthorService;
 import java.sql.SQLException;
 import java.util.Date;
 import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.ServletContext;
 import javax.sql.DataSource;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  *
@@ -41,8 +45,8 @@ public class AuthorController extends HttpServlet {
     private final String EDIT_PAGE = "/edit.jsp";
    
 
-    @Inject
-    private AuthorFacade authService;
+
+    private AuthorService authService;
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -87,7 +91,7 @@ public class AuthorController extends HttpServlet {
                     author.setAuthorName(authorName);
                     author.setDateAdded(new Date());
 
-                    authService.create(author);
+                    authService.edit(author);
                     this.refreshList(request, authService);
                     destination = RESPONSE_PAGE;
                     //response.sendRedirect(RESPONSE_PAGE);
@@ -100,7 +104,7 @@ public class AuthorController extends HttpServlet {
                         String[] itemsChecked = request.getParameterValues("authorId");
                         if (itemsChecked != null && itemsChecked.length > 0) {
                             for (String id : itemsChecked) {
-                                author = authService.find(new Integer(id));
+                                author = authService.findById(id);
                                 authService.remove(author);
                             }
                         }
@@ -108,8 +112,7 @@ public class AuthorController extends HttpServlet {
                     }if (update != null && update.equals("Update")){
 
                     String[] itemsChecked = request.getParameterValues("authorId");
-                    Integer a = Integer.parseInt(itemsChecked[0]);
-                    author = authService.find(new Integer(a));
+                    author = authService.findById(itemsChecked[0]);
                     request.setAttribute("author", author);
 
                     destination = EDIT_PAGE;
@@ -120,7 +123,7 @@ public class AuthorController extends HttpServlet {
                 case EDIT:
                     String name = request.getParameter("authorName");
                     String authorId = request.getParameter("authorId");
-                    author = authService.find(new Integer(authorId));
+                    author = authService.findById(authorId);
                     author.setAuthorName(name);
                     authService.edit(author);
                     this.refreshList(request, authService);
@@ -189,11 +192,15 @@ public class AuthorController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-
+        ServletContext sctx = getServletContext();
+        WebApplicationContext ctx
+                = WebApplicationContextUtils.getWebApplicationContext(sctx);
+        authService = (AuthorService) ctx.getBean("authorService");
+        
     }
 
 
-    private void refreshList(HttpServletRequest request, AuthorFacade authorService) throws Exception {
+    private void refreshList(HttpServletRequest request, AuthorService authorService) throws Exception {
         List<Author> authors = authorService.findAll();
         request.setAttribute("authorList", authors);
     }
