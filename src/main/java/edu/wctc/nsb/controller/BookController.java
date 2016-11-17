@@ -114,26 +114,25 @@ public class BookController extends HttpServlet {
                             String[] itemsChecked = request.getParameterValues("bookId");
                             Integer a = Integer.parseInt(itemsChecked[0]);
                             book = bookService.find(new Integer(a));
-                            List<Author> auth = authorService.findAll();
                             request.setAttribute("book", book);
-                            request.setAttribute("authorList", auth);
+                            this.refreshAuthorList(request, authorService);
                             destination = EDIT_PAGE;
                         }
                         //response.sendRedirect(EDIT_PAGE);
                         break;
 
-                    case EDIT:
-                        String title2 = request.getParameter("title");
-                        String isbn2 = request.getParameter("isbn");
+                    case EDIT:                      
+                        title = request.getParameter("title");
+                        isbn = request.getParameter("isbn");
                         String bookId = request.getParameter("bookId");
-                        String authorId2 = request.getParameter("authorId");
+                        authorId = request.getParameter("authorId");
                         book = bookService.find(new Integer(bookId));
-                        book.setTitle(title2);
-                        book.setIsbn(isbn2);
-                        Author author1 = null;
-                          if(authorId2 != null) {
-                            author = authorService.find(new Integer(authorId2));
-                            book.setAuthorId(author1);
+                        book.setTitle(title);
+                        book.setIsbn(isbn);
+                        author = null;
+                          if(authorId != null) {
+                            author = authorService.find(new Integer(authorId));
+                            book.setAuthorId(author);
                           }
                         bookService.edit(book);
                         this.refreshList(request, bookService);
@@ -204,6 +203,11 @@ public class BookController extends HttpServlet {
   private void refreshList(HttpServletRequest request, BookFacade bookServ) throws Exception {
         List<Book> books = bookServ.findAll();
         request.setAttribute("bookList", books);
+    }
+  
+   private void refreshAuthorList(HttpServletRequest request, AuthorFacade authService) throws Exception {
+        List<Author> authors = authService.findAll();
+        request.setAttribute("authors", authors);
     }
   
 }

@@ -5,6 +5,9 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -25,7 +28,12 @@
                             <input type="text" name="title" value="" id="title"/><br>
                             <label>Enter ISBN:</label>
                             <input type="text" name="isbn" value="" id="isbn"/><br>
-                            <label>Enter Author ID:</label>
+                            <label>Select Author:</label>
+                            <select>
+                                <c:forEach var="author" items="${authors}">
+                                    <option value="${author.authorId}" name="authorId" id="author">${author.authorName}</option>
+                                </c:forEach>
+                            </select>
                             <input type="text" name="authorId" value="" id="authorId"/><br>
                             <input type="hidden" name="action" value="add" />
                             <input class="btn" color="black" type="submit" name="submit" value="add" id="addButton" />

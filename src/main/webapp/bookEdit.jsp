@@ -41,20 +41,10 @@
                             <input id="isbn" color="black" type="text" name="isbn" value="${book.isbn}" />
                             <br>
                             <label>Author:</label>
-                            <select id="authorDropDown" name="authorId">
-                                <c:choose>
-                                    <c:when test="${not empty book.authorId}">
-                                        <option value="">None</option>
-                                        <c:forEach var="author" items="${authorList}">                                       
-                                            <option value="${author.authorId}" <c:if test="${book.authorId.authorId == author.authorId}"></c:if>${author.authorName}</option>
-                                        </c:forEach>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <c:forEach var="author" items="${authorList}" varStatus="rowCount">                                       
-                                            <option value="${author.authorId}" <c:if test="${rowCount.count == 1}"></c:if>${author.authorName}</option>
-                                        </c:forEach>
-                                    </c:otherwise>
-                                </c:choose>
+                            <select>
+                                <c:forEach var="author" items="${authors}">
+                                    <option value="${author.authorId}" name="bookAuthor" id="author">${author.authorName} </option>
+                                </c:forEach>
                             </select>
                             <input id="authorId" color="black" type="text" name="authorId" value="${book.authorId.authorName}" readonly/>
                             <br>
